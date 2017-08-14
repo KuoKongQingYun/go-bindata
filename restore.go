@@ -11,8 +11,8 @@ import (
 
 func writeRestore(w io.Writer) error {
 	_, err := fmt.Fprintf(w, `
-// RestoreAsset restores an asset under the given directory
-func RestoreAsset(dir, name string) error {
+// RestoreAsset restores an asset to the given file path
+func RestoreAsset(writeOutPath, name string) error {
 	data, err := Asset(name)
 	if err != nil {
 		return err
@@ -21,15 +21,15 @@ func RestoreAsset(dir, name string) error {
 	if err != nil {
 		return err
 	}
-	err = os.MkdirAll(_filePath(dir, filepath.Dir(name)), os.FileMode(0755))
+	err = os.MkdirAll(filepath.Dir(writeOutPath), os.FileMode(0755))
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(_filePath(dir, name), data, info.Mode())
+	err = ioutil.WriteFile(writeOutPath, data, info.Mode())
 	if err != nil {
 		return err
 	}
-	err = os.Chtimes(_filePath(dir, name), info.ModTime(), info.ModTime())
+	err = os.Chtimes(writeOutPath, info.ModTime(), info.ModTime())
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func RestoreAssets(dir, name string) error {
 	}
 	// Dir
 	for _, child := range children {
-		err = RestoreAssets(dir, filepath.Join(name, child))
+		err = RestoreAssets(_filePath(dir,child), filepath.Join(name, child))
 		if err != nil {
 			return err
 		}
